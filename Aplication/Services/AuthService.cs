@@ -1,26 +1,24 @@
 using Application.DTOs;
 using Application.Interfaces;
+using Infrastructure.Interfaces;
 using Domain.Entities;
-using Microsoft.AspNetCore.Identity;
 
 namespace Application.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserRepository _userRepository;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(
-            UserManager<ApplicationUser> userManager,
-            SignInManager<ApplicationUser> signInManager)
+        public AuthService(IUserRepository userRepository, ITokenService tokenService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _userRepository = userRepository;
+            _tokenService = tokenService;
         }
 
         public async Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto)
         {
-            var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
+            var existingUser = await _userRepository.FindByEmailAsync(registerDto.Email);
             if (existingUser != null)
             {
                 return new AuthResponseDto
@@ -38,29 +36,32 @@ namespace Application.Services
                 CreatedAt = DateTime.UtcNow
             };
 
-            var result = await _userManager.CreateAsync(user, registerDto.Password);
+            var (succeeded, errors) = await _userRepository.CreateUserAsync(user, registerDto.Password);
 
-            if (!result.Succeeded)
+            if (!succeeded)
             {
                 return new AuthResponseDto
                 {
                     Success = false,
-                    Message = string.Join(", ", result.Errors.Select(e => e.Description))
+                    Message = string.Join(", ", errors)
                 };
             }
+
+            var token = _tokenService.GenerateToken(user);
 
             return new AuthResponseDto
             {
                 Success = true,
                 Message = "Usuário registrado com sucesso.",
                 UserId = user.Id,
-                Email = user.Email
+                Email = user.Email,
+                Token = token
             };
         }
 
         public async Task<AuthResponseDto> LoginAsync(LoginDto loginDto)
         {
-            var user = await _userManager.FindByEmailAsync(loginDto.Email);
+            var user = await _userRepository.FindByEmailAsync(loginDto.Email);
             if (user == null)
             {
                 return new AuthResponseDto
@@ -70,15 +71,11 @@ namespace Application.Services
                 };
             }
 
-            var result = await _signInManager.PasswordSignInAsync(
-                user, 
-                loginDto.Password, 
-                isPersistent: false, 
-                lockoutOnFailure: true);
+            var (succeeded, isLockedOut) = await _userRepository.ValidatePasswordAsync(user, loginDto.Password);
 
-            if (!result.Succeeded)
+            if (!succeeded)
             {
-                if (result.IsLockedOut)
+                if (isLockedOut)
                 {
                     return new AuthResponseDto
                     {
@@ -94,18 +91,21 @@ namespace Application.Services
                 };
             }
 
+            var token = _tokenService.GenerateToken(user);
+
             return new AuthResponseDto
             {
                 Success = true,
                 Message = "Login realizado com sucesso.",
                 UserId = user.Id,
-                Email = user.Email
+                Email = user.Email,
+                Token = token
             };
         }
 
         public async Task<AuthResponseDto> LogoutAsync()
         {
-            await _signInManager.SignOutAsync();
+            await _userRepository.SignOutAsync();
             return new AuthResponseDto
             {
                 Success = true,
