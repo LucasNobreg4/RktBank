@@ -1,0 +1,6 @@
+@RktBank_HostAddress = http://localhost:5249
+
+GET {{RktBank_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
