@@ -69,6 +69,12 @@ ScaffoldingReadMe.txt
 # StyleCop
 StyleCopReport.xml
 
+#DB Files
+*.mdf
+*.ldf
+*.ndf
+*.db
+
 # Files built by Visual Studio
 *_i.c
 *_p.c

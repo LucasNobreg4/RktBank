@@ -6,5 +6,6 @@ namespace Domain.Entities
     {
         public string? FullName { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public ICollection<Customer> CreatedCustomers { get; set; } = new List<Customer>();
     }
 }

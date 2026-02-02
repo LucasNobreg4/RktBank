@@ -19,50 +19,6 @@ namespace RktBank.Controllers
         }
 
         /// <summary>
-        /// Registra um novo usuário no sistema
-        /// </summary>
-        /// <param name="registerDto">Dados de registro do usuário</param>
-        /// <returns>Resultado do registro</returns>
-        [HttpPost("register")]
-        [AllowAnonymous]
-        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(new AuthResponseDto
-                {
-                    Success = false,
-                    Message = "Dados inválidos fornecidos."
-                });
-            }
-
-            try
-            {
-                var result = await _authService.RegisterAsync(registerDto);
-
-                if (!result.Success)
-                {
-                    _logger.LogWarning("Falha no registro do usuário: {Email}", registerDto.Email);
-                    return BadRequest(result);
-                }
-
-                _logger.LogInformation("Usuário registrado com sucesso: {UserId}", result.UserId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Erro ao registrar usuário: {Email}", registerDto.Email);
-                return StatusCode(500, new AuthResponseDto
-                {
-                    Success = false,
-                    Message = "Ocorreu um erro ao processar sua solicitação."
-                });
-            }
-        }
-
-        /// <summary>
         /// Realiza login de um usuário
         /// </summary>
         /// <param name="loginDto">Credenciais de login</param>
