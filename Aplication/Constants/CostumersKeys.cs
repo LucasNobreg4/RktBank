@@ -13,7 +13,6 @@ namespace Application.Constants
         public const string ByDocumentPrefix = "customers:doc:";
         public const string Initialized = "customers:initialized";
 
-        // Métodos helper para gerar chaves
         public static string ById(string id) => $"{ByIdPrefix}{id}";
         public static string ByDocument(string document) => $"{ByDocumentPrefix}{document}";
     }

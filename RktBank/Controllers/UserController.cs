@@ -12,7 +12,7 @@ namespace RktBankAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly IAuthService _authService; //TOOD - trocar o fluxo de registro para UserService
+        private readonly IAuthService _authService;
         private readonly ILogger<UserController> _logger;
 
         public UserController(IUserService userService, IAuthService authService, ILogger<UserController> logger)

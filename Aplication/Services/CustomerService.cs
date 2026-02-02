@@ -4,6 +4,7 @@ using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Interfaces;
 using Application.Constants;
+using Application.Util;
 
 namespace Application.Services
 {
@@ -31,13 +32,13 @@ namespace Application.Services
             }
 
             var allCustomers = await _customerRepository.GetAllAsync();
-            var allDtos = allCustomers.Select(MapToDto).ToList();
+            var allDtos = allCustomers.Select(CustomerUtil.MapToDto).ToList();
 
             _cacheService.SetPermanent(CostumersKeys.All, allDtos);
 
             foreach (var customer in allCustomers)
             {
-                var dto = MapToDto(customer);
+                var dto = CustomerUtil.MapToDto(customer);
                 _cacheService.SetPermanent(CostumersKeys.ById(customer.Id), dto);
                 _cacheService.SetPermanent(CostumersKeys.ByDocument(customer.Document), dto);
             }
@@ -93,7 +94,7 @@ namespace Application.Services
             };
 
             var createdCustomer = await _customerRepository.CreateAsync(customer);
-            var customerDto = MapToDto(createdCustomer);
+            var customerDto = CustomerUtil.MapToDto(createdCustomer);
 
             _cacheService.SetPermanent(CostumersKeys.ById(createdCustomer.Id), customerDto);
             _cacheService.SetPermanent(CostumersKeys.ByDocument(createdCustomer.Document), customerDto);
@@ -141,7 +142,7 @@ namespace Application.Services
             }
 
             var allCustomers = await _customerRepository.GetAllAsync();
-            var dtos = allCustomers.Select(MapToDto).ToList();
+            var dtos = allCustomers.Select(CustomerUtil.MapToDto).ToList();
             _cacheService.SetPermanent(CostumersKeys.All, dtos);
 
             return dtos;
@@ -186,7 +187,7 @@ namespace Application.Services
                 };
             }
 
-            var customerDto = MapToDto(customer);
+            var customerDto = CustomerUtil.MapToDto(customer);
             _cacheService.SetPermanent(CostumersKeys.ById(customer.Id), customerDto);
             _cacheService.SetPermanent(CostumersKeys.ByDocument(customer.Document), customerDto);
             _cacheService.Remove(CostumersKeys.All);
@@ -215,28 +216,6 @@ namespace Application.Services
             }
 
             return result;
-        }
-
-        private static CustomerDto MapToDto(Customer customer)
-        {
-            return new CustomerDto
-            {
-                Id = customer.Id,
-                Document = customer.Document,
-                Type = customer.Type.ToString(),
-                FullName = customer.FullName,
-                BirthDate = customer.BirthDate,
-                Email = customer.Email,
-                PhoneNumber = customer.PhoneNumber,
-                Address = customer.Address,
-                City = customer.City,
-                State = customer.State,
-                ZipCode = customer.ZipCode,
-                CreatedByUserId = customer.CreatedByUserId,
-                CreatedAt = customer.CreatedAt,
-                UpdatedAt = customer.UpdatedAt,
-                IsActive = customer.IsActive
-            };
         }
     }
 }
